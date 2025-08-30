@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mis Finanzas — Móvil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1225;         /* fondo oscuro móvil */
+      --panel:#0f172a;      /* slate-900 */
+      --panel-2:#111827;    /* gris muy oscuro */
+      --text:#e5e7eb;       /* gris claro */
+      --muted:#9ca3af;      /* gris medio */
+      --brand:#22c55e;      /* verde */
+      --danger:#ef4444;     /* rojo */
+      --border:#1f2a49;     /* azul-gris */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,Helvetica,sans-serif;-webkit-tap-highlight-color: transparent}
+
+    /* Layout móvil centrado */
+    .app{max-width:480px;min-height:100dvh;margin:0 auto;display:flex;flex-direction:column}
+
+    /* Top bar pegajosa */
+    .topbar{position:sticky;top:0;z-index:10;backdrop-filter:saturate(1.2) blur(8px);background:linear-gradient(180deg,rgba(15,23,42,.85),rgba(15,23,42,.65));border-bottom:1px solid var(--border)}
+    .topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand h1{font-size:18px;margin:0;font-weight:700}
+    .summary{display:flex;gap:10px}
+    .chip{background:#0b1430;border:1px solid var(--border);padding:6px 8px;border-radius:10px;font-size:12px;display:flex;gap:6px;align-items:center}
+    .chip b{font-size:13px}
+
+    /* Contenido scroll */
+    .content{flex:1;padding:12px}
+
+    /* Tarjetas compactas */
+    .card{background:linear-gradient(180deg,var(--panel),#0b1430);border:1px solid var(--border);border-radius:14px}
+    .card .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border)}
+    .card .bd{padding:10px 12px}
+
+    /* Filtros compactos */
+    .filters{display:flex;gap:8px;align-items:center}
+    select,input[type="month"]{appearance:none;width:auto;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:var(--panel-2);color:var(--text)}
+    input[type="search"]{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel-2);color:var(--text)}
+
+    /* Lista de movimientos tipo celda */
+    .list{margin:0;padding:0;list-style:none}
+    .cell{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
+    .cell .avatar{width:36px;height:36px;border-radius:10px;background:#0c1733;display:grid;place-items:center;font-weight:700}
+    .cell .meta{flex:1;min-width:0}
+    .cell .meta .title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cell .meta .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cell .amount{font-weight:700}
+    .cell .amount.neg{color:#fca5a5}
+    .cell .amount.pos{color:#86efac}
+    .cell button{all:unset;padding:6px 8px;border:1px solid var(--border);border-radius:8px;background:#0e1a38;cursor:pointer}
+
+    /* FAB (botón flotante) */
+    .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:20}
+    .fab button{all:unset;background:linear-gradient(90deg,#2563eb,var(--brand));color:white;border:none;padding:14px 16px;border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-weight:700}
+
+    /* Hoja deslizante para el formulario */
+    .sheet{position:fixed;left:0;right:0;bottom:-100%;z-index:30;transition:bottom .28s ease-in-out;background:linear-gradient(180deg,#0d1530,#0a132c);border-top:1px solid var(--border);border-radius:16px 16px 0 0;max-width:480px;margin:0 auto}
+    .sheet.open{bottom:0}
+    .sheet .drag{width:48px;height:5px;background:#30406f;border-radius:999px;margin:10px auto}
+    .sheet .bd{padding:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    label{font-size:12px;color:var(--muted)}
+    input,select,textarea{width:100%;padding:12px;background:var(--panel-2);color:var(--text);border:1px solid var(--border);border-radius:12px;outline:none;font-size:16px}
+    input:focus,select:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+    .actions{display:flex;gap:8px;margin-top:8px}
+    .btn{all:unset;background:#13224a;border:1px solid var(--border);color:var(--text);padding:12px;border-radius:12px;text-align:center;flex:1 1 auto;font-weight:700}
+    .btn.primary{background:linear-gradient(90deg,#2563eb,var(--brand));border:none;color:#fff}
+    .btn.danger{background:#2a0f16;border:1px solid #5b1d26;color:#fecaca}
+
+    /* Pie con acciones secundarias */
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+
+    /* Gráfico alto táctil */
+    canvas{max-width:100%}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Top -->
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 18 0A9 9 0 0 0 3 12Zm9-5v10m-4-3h8" stroke="#86efac" stroke-width="2" stroke-linecap="round"/></svg>
+          <h1>Mis Finanzas</h1>
+        </div>
+        <div class="summary">
+          <div class="chip"><span>Ing.</span><b id="kpiIn">—</b></div>
+          <div class="chip"><span>Egr.</span><b id="kpiOut">—</b></div>
+          <div class="chip"><span>Bal.</span><b id="kpiBal">—</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <main class="content">
+      <!-- Resumen mensual + filtros -->
+      <section class="card" style="margin-bottom:12px">
+        <div class="hd">
+          <strong>Resumen mensual</strong>
+          <div class="filters">
+            <select id="monthFilter"></select>
+            <button id="todayBtn" class="btn" style="padding:8px 10px">Hoy</button>
+          </div>
+        </div>
+        <div class="bd">
+          <canvas id="chart" height="170"></canvas>
+        </div>
+      </section>
+
+      <!-- Buscador -->
+      <div style="margin:8px 0 12px">
+        <input id="search" type="search" placeholder="Buscar categoría o nota" inputmode="search" />
+      </div>
+
+      <!-- Lista -->
+      <section class="card">
+        <div class="hd"><strong>Movimientos</strong>
+          <div class="toolbar">
+            <button id="exportBtn" class="btn" style="padding:6px 10px">CSV</button>
+            <label for="importFile" class="btn" style="padding:6px 10px;cursor:pointer">Importar<input id="importFile" type="file" accept=".csv" hidden></label>
+            <button id="resetBtn" class="btn danger" style="padding:6px 10px">Borrar</button>
+          </div>
+        </div>
+        <div class="bd" id="listWrap">
+          <ul class="list" id="list"></ul>
+        </div>
+      </section>
+
+      <p class="muted" style="text-align:center;margin:14px 0">Los datos viven en tu navegador. Exporta CSV como respaldo.</p>
+    </main>
+
+    <!-- FAB -->
+    <div class="fab"><button id="openSheet">+ Registrar</button></div>
+
+    <!-- Sheet formulario -->
+    <section id="sheet" class="sheet" aria-labelledby="form-title" aria-modal="true" role="dialog">
+      <div class="drag"></div>
+      <div class="bd">
+        <h2 id="form-title" style="margin:0 0 8px;font-size:16px">Nueva transacción</h2>
+        <form id="txForm">
+          <div class="grid2">
+            <div>
+              <label>Tipo</label>
+              <select id="type" required>
+                <option value="ingreso">Ingreso</option>
+                <option value="egreso" selected>Egreso</option>
+              </select>
+            </div>
+            <div>
+              <label>Fecha</label>
+              <input id="date" type="date" required />
+            </div>
+          </div>
+          <div style="margin-top:8px">
+            <label>Categoría</label>
+            <input id="category" list="cats" placeholder="p. ej., Transporte" required />
+            <datalist id="cats">
+              <option>Alimentación</option>
+              <option>Transporte</option>
+              <option>Vivienda</option>
+              <option>Servicios</option>
+              <option>Salud</option>
+              <option>Educación</option>
+              <option>Ocio</option>
+              <option>Ingresos</option>
+              <option>Otros</option>
+            </datalist>
+          </div>
+          <div style="margin-top:8px" class="grid2">
+            <div>
+              <label>Monto (COP)</label>
+              <input id="amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" required />
+            </div>
+            <div>
+              <label>Nota</label>
+              <input id="note" type="text" placeholder="breve detalle" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" id="closeSheet">Cancelar</button>
+            <button class="btn primary" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const LS_KEY = 'pf_transactions_v2_mobile';
+  const fmtCOP = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+  const today = new Date();
+
+  const els = {
+    list: document.getElementById('list'),
+    listWrap: document.getElementById('listWrap'),
+    search: document.getElementById('search'),
+    monthFilter: document.getElementById('monthFilter'),
+    todayBtn: document.getElementById('todayBtn'),
+    exportBtn: document.getElementById('exportBtn'),
+    importFile: document.getElementById('importFile'),
+    resetBtn: document.getElementById('resetBtn'),
+    chartCanvas: document.getElementById('chart'),
+    // KPIs en topbar
+    kpiIn: document.getElementById('kpiIn'),
+    kpiOut: document.getElementById('kpiOut'),
+    kpiBal: document.getElementById('kpiBal'),
+    // Sheet
+    sheet: document.getElementById('sheet'),
+    openSheet: document.getElementById('openSheet'),
+    closeSheet: document.getElementById('closeSheet'),
+    form: document.getElementById('txForm'),
+    type: document.getElementById('type'),
+    date: document.getElementById('date'),
+    category: document.getElementById('category'),
+    amount: document.getElementById('amount'),
+    note: document.getElementById('note'),
+  };
+
+  let transactions = load();
+  let selectedMonth = monthKey(today);
+  let searchQuery = '';
+  let chart;
+
+  // Init
+  els.date.valueAsDate = today;
+  populateMonthOptions();
+  renderAll();
+
+  // Sheet open/close
+  els.openSheet.addEventListener('click', ()=> openSheet());
+  els.closeSheet.addEventListener('click', ()=> closeSheet());
+  els.sheet.addEventListener('click', (e)=>{ if(e.target===els.sheet) closeSheet(); });
+  function openSheet(){ els.sheet.classList.add('open'); setTimeout(()=>els.category.focus(), 150); }
+  function closeSheet(){ els.sheet.classList.remove('open'); }
+
+  // Form
+  els.form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const t = {
+      id: crypto.randomUUID(),
+      type: els.type.value,
+      date: els.date.value,
+      category: (els.category.value||'Otros').trim(),
+      amount: Number(els.amount.value),
+      note: (els.note.value||'').trim(),
+      createdAt: new Date().toISOString(),
+    };
+    if(!t.date || !t.category || !(t.amount>0)) return;
+    transactions.push(t);
+    save();
+    els.form.reset();
+    els.date.valueAsDate = new Date();
+    closeSheet();
+    renderAll();
+  });
+
+  // Filtros y búsqueda
+  els.monthFilter.addEventListener('change', ()=>{ selectedMonth = els.monthFilter.value; renderAll(); });
+  els.todayBtn.addEventListener('click', ()=>{ selectedMonth = monthKey(today); els.monthFilter.value = selectedMonth; renderAll(); });
+  els.search.addEventListener('input', ()=>{ searchQuery = els.search.value.toLowerCase(); renderList(); });
+
+  // Import/Export/Reset
+  els.exportBtn.addEventListener('click', ()=>{
+    const header = 'id,tipo,fecha,categoria,nota,monto
+';
+    const rows = transactions.map(t=>[t.id,t.type,t.date,csvSafe(t.category),csvSafe(t.note),t.amount].join(','));
+    const blob = new Blob([header + rows.join('
+')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'),{href:url,download:'mis_finanzas.csv'});
+    a.click(); URL.revokeObjectURL(url);
+  });
+  els.importFile.addEventListener('change', (ev)=>{
+    const file = ev.target.files?.[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const text = String(reader.result||'');
+      const lines = text.split(/?
+/).filter(Boolean);
+      const start = lines[0].toLowerCase().startsWith('id,') ? 1 : 0;
+      for(let i=start;i<lines.length;i++){
+        const cols = parseCSVLine(lines[i]); if(cols.length<6) continue;
+        const [id,type,date,category,note,amount] = cols;
+        if(!date) continue;
+        transactions.push({ id: id||crypto.randomUUID(), type:(type==='ingreso'?'ingreso':'egreso'), date, category, note, amount:Number(amount||0), createdAt:new Date().toISOString() });
+      }
+      save(); populateMonthOptions(); renderAll(); ev.target.value='';
+    };
+    reader.readAsText(file);
+  });
+  els.resetBtn.addEventListener('click', ()=>{
+    if(confirm('Esto borrará todas tus transacciones. ¿Seguro?')){
+      transactions = []; save(); populateMonthOptions(); renderAll();
+    }
+  });
+
+  // Helpers
+  function load(){ try{return JSON.parse(localStorage.getItem(LS_KEY)||'[]');}catch{return [];} }
+  function save(){ localStorage.setItem(LS_KEY, JSON.stringify(transactions)); }
+  function monthKey(d){ const dt=(d instanceof Date)?d:new Date(d); return dt.toISOString().slice(0,7); }
+  function monthLabel(key){ const [y,m]=key.split('-').map(Number); const f=new Date(y,m-1,1); return f.toLocaleDateString('es-CO',{year:'numeric',month:'long'}); }
+  function csvSafe(s){ const v=String(s??''); return (/,|"|
+/.test(v))? '"'+v.replaceAll('"','""')+'"': v; }
+  function parseCSVLine(line){ const out=[]; let cur=''; let inQ=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(ch==='"'){ if(inQ && line[i+1]==='"'){cur+='"'; i++;} else inQ=!inQ; } else if(ch===',' && !inQ){ out.push(cur); cur=''; } else cur+=ch; } out.push(cur); return out.map(s=>s.trim()); }
+
+  function populateMonthOptions(){
+    const keys = Array.from(new Set(transactions.map(t=>monthKey(t.date)).concat([monthKey(new Date())]))).sort().reverse();
+    els.monthFilter.innerHTML = keys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join('');
+    if(!keys.includes(selectedMonth)) selectedMonth = keys[0];
+    els.monthFilter.value = selectedMonth;
+  }
+
+  function renderAll(){ renderKPIs(); renderChart(); renderList(); }
+
+  function renderKPIs(){
+    const monthTx = transactions.filter(t=>monthKey(t.date)===selectedMonth);
+    const ing = monthTx.filter(t=>t.type==='ingreso').reduce((a,b)=>a+b.amount,0);
+    const egr = monthTx.filter(t=>t.type==='egreso').reduce((a,b)=>a+b.amount,0);
+    const bal = ing - egr;
+    els.kpiIn.textContent = fmtCOP.format(ing);
+    els.kpiOut.textContent = fmtCOP.format(egr);
+    els.kpiBal.textContent = fmtCOP.format(bal);
+  }
+
+  function renderChart(){
+    const monthTx = transactions.filter(t=>monthKey(t.date)===selectedMonth);
+    const ing = monthTx.filter(t=>t.type==='ingreso').reduce((a,b)=>a+b.amount,0);
+    const egr = monthTx.filter(t=>t.type==='egreso').reduce((a,b)=>a+b.amount,0);
+    const data = { labels:['Ingresos','Egresos'], datasets:[{ data:[ing,egr] }] };
+    if(chart) chart.destroy();
+    chart = new Chart(els.chartCanvas, { type:'doughnut', data, options:{
+      plugins:{ legend:{labels:{color:'#c7d2fe'}}, tooltip:{callbacks:{label:(ctx)=> `${ctx.label}: ${fmtCOP.format(ctx.raw)}`}}},
+      cutout:'55%'
+    }});
+  }
+
+  function renderList(){
+    const monthTx = transactions.filter(t=>monthKey(t.date)===selectedMonth);
+    const filtered = monthTx.filter(t=> !searchQuery || (t.category?.toLowerCase().includes(searchQuery) || t.note?.toLowerCase().includes(searchQuery)))
+      .sort((a,b)=> (a.date<b.date?1:-1) || (a.createdAt<b.createdAt?1:-1));
+
+    els.list.innerHTML = filtered.map(t=>{
+      const sign = t.type==='egreso' ? '-' : '+';
+      const cls = t.type==='egreso' ? 'neg' : 'pos';
+      const emoji = t.type==='egreso' ? '–' : '+';
+      return `<li class="cell">
+        <div class="avatar">${emoji}</div>
+        <div class="meta">
+          <div class="title">${escapeHtml(t.category)}</div>
+          <div class="sub">${new Date(t.date).toLocaleDateString('es-CO')} • ${escapeHtml(t.note||'')}</div>
+        </div>
+        <div class="amount ${cls}">${sign}${fmtCOP.format(t.amount)}</div>
+        <button data-id="${t.id}" class="del" title="Eliminar">🗑️</button>
+      </li>`;
+    }).join('');
+
+    els.list.querySelectorAll('.del').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-id');
+        if(confirm('¿Eliminar esta transacción?')){
+          transactions = transactions.filter(x=>x.id!==id); save(); renderAll();
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+})();
+</script>
+</body>
+</html>
