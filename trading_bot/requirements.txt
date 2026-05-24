@@ -1,0 +1,11 @@
+yfinance>=0.2.40
+ccxt>=4.3.0
+pandas>=2.2.0
+numpy>=1.26.0
+pandas-ta>=0.3.14b
+backtrader>=1.9.78
+matplotlib>=3.8.0
+quantstats>=0.0.62
+alpaca-py>=0.30.0
+python-dotenv>=1.0.0
+rich>=13.7.0
