@@ -10,6 +10,7 @@ from .data import load
 from .strategy import add_indicators, generate_signal, position_size
 from .broker import PaperBroker, AlpacaBroker
 from .backtest import run as run_backtest
+from .optimize import walk_forward
 
 console = Console()
 
@@ -95,18 +96,54 @@ def backtest_cmd(symbol: str):
         console.print(t)
 
 
+def optimize_cmd(symbol: str, timeframe: str, days: int):
+    console.rule(f"[bold cyan]Optimizando {symbol} ({timeframe}, {days}d)")
+    df = load(symbol, timeframe, days=days)
+    grid = {
+        "ema_fast":       [8, 12, 20],
+        "ema_slow":       [30, 50, 80, 120],
+        "rsi_buy_max":    [70, 80],
+        "atr_stop_mult":  [1.5, 2.0, 3.0],
+        "atr_take_mult":  [3.0, 5.0, 8.0],
+        "risk_per_trade": [0.01, 0.02],
+    }
+    wf = walk_forward(df, grid, CONFIG.backtest, rank_by="sharpe")
+    if not wf.get("best_params"):
+        console.print("[red]Sin parametros validos[/red]")
+        return
+    console.print(f"\n[bold]Mejores parametros (train):[/bold] {wf['best_params']}")
+    tm, te = wf["train_metrics"], wf["test_metrics"]
+    t = Table(title="Train vs Test (out-of-sample)")
+    for col in ["Set", "Retorno", "Sharpe", "Max DD", "Trades"]:
+        t.add_column(col)
+    t.add_row("Train", f"{tm['return_pct']:+.2f}%", f"{tm['sharpe']:.2f}",
+              f"{tm['max_dd_pct']:.2f}%", str(tm["trades"]))
+    t.add_row("Test",  f"{te['return_pct']:+.2f}%", f"{te['sharpe']:.2f}",
+              f"{te['max_dd_pct']:.2f}%", str(te["trades"]))
+    console.print(t)
+    gap = tm["return_pct"] - te["return_pct"]
+    msg = "[red]Probable OVERFIT[/red]" if gap > 30 else "[green]Razonable[/green]"
+    console.print(f"Gap train-test: {gap:+.2f}%  {msg}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Trading bot")
     sub = parser.add_subparsers(dest="cmd", required=True)
     bt = sub.add_parser("backtest", help="Correr backtest historico")
     bt.add_argument("symbol", help="ej: BTC-USD, AAPL, BTC/USDT")
     sub.add_parser("live", help="Correr bot en vivo (paper)")
+    opt = sub.add_parser("optimize", help="Optimizar parametros via grid search")
+    opt.add_argument("symbol")
+    opt.add_argument("--timeframe", default="1d")
+    opt.add_argument("--days", type=int, default=730)
     args = parser.parse_args()
 
     if args.cmd == "backtest":
         backtest_cmd(args.symbol)
     elif args.cmd == "live":
         live_loop()
+    elif args.cmd == "optimize":
+        optimize_cmd(args.symbol, args.timeframe, args.days)
 
 
 if __name__ == "__main__":
