@@ -26,6 +26,18 @@ Estrategia de seguimiento de tendencia con EMAs sobre **BTCUSDT diario**
 > riesgo/beneficio (profit factor 2,46) y un drawdown muy inferior al de
 > comprar y mantener, quedándose en efectivo durante las tendencias bajistas.
 
+### Resultados en otros pares (1d, parámetros optimizados)
+
+| Par      | Retorno bot | Buy & Hold | Comentario                         |
+|----------|-------------|------------|------------------------------------|
+| BTCUSDT  | +180,9%     | +182,6%    | Mismo retorno, mucho menos riesgo  |
+| ETHUSDT  | **+70,1%**  | +22,7%     | **Bate al mercado 3×**             |
+| SOLUSDT  | +295,0%     | +318,3%    | Gran retorno, menor drawdown       |
+| BNBUSDT  | +189,2%     | +199,2%    | Similar al mercado, menos riesgo   |
+
+En todos los pares el bot es **rentable**; en ETH **supera claramente** a comprar
+y mantener. Su ventaja principal es protegerse en las caídas (se va a efectivo).
+
 ## Instalación
 
 ```bash
@@ -37,6 +49,7 @@ pip install -r requirements.txt   # pandas, numpy
 ```bash
 # 1) Backtest sobre datos históricos reales (config por defecto, rentable)
 python run_bot.py backtest --symbol BTCUSDT --interval 1d
+python run_bot.py backtest --symbol BTCUSDT --interval 1d --plot   # + gráfico PNG
 
 # 2) Optimizar parámetros (búsqueda en rejilla por retorno total)
 python run_bot.py optimize --symbol BTCUSDT --interval 1d
@@ -71,6 +84,7 @@ trading_bot/
 ├── strategy.py    # Indicadores (EMA, RSI, ATR) y estrategias
 ├── portfolio.py   # Broker/cartera simulados con comisiones y slippage
 ├── engine.py      # Motor de backtest + bucle de paper trading en vivo
+├── plotting.py    # Gráficos PNG (precio + capital + drawdown)
 └── cli.py         # Interfaz de línea de comandos
 run_bot.py         # Punto de entrada
 ```

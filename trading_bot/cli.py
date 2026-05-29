@@ -52,6 +52,14 @@ def cmd_backtest(args) -> None:
         json.dump(result.metrics, fh, indent=2)
     print(f"Resultados guardados en {STATE_DIR}/")
 
+    if args.plot:
+        from .plotting import plot_backtest
+
+        out = STATE_DIR / f"backtest_{args.symbol}_{args.interval}.png"
+        title = f"Backtest {args.symbol} {args.interval} - {strategy.name} {strat_kwargs}"
+        path = plot_backtest(df, result.equity_curve, result.trades, result.metrics, title, out)
+        print(f"Grafico guardado en {path}")
+
 
 def cmd_optimize(args) -> None:
     df = _load_data(args)
@@ -149,6 +157,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     bt = sub.add_parser("backtest", help="Backtest sobre datos historicos.")
     common(bt)
+    bt.add_argument("--plot", action="store_true", help="Genera grafico PNG de resultados.")
     bt.set_defaults(func=cmd_backtest)
 
     op = sub.add_parser("optimize", help="Busqueda en rejilla de parametros.")
