@@ -103,6 +103,32 @@ Cada posición lleva **stop-loss y take-profit basados en ATR** (volatilidad),
 además de la salida por señal de la estrategia. Esto limita las pérdidas por
 operación y protege el capital.
 
+## 🔄 Bot en vivo continuo (GitHub Actions)
+
+Para que el bot opere **de forma continua durante días** sin depender de tu
+máquina, hay una workflow programada en `.github/workflows/paper-trading.yml`
+que GitHub ejecuta **cada hora**:
+
+1. Descarga el precio más reciente de Binance.
+2. Evalúa la señal sobre la última vela cerrada.
+3. Actualiza la cartera simulada (dinero virtual).
+4. Guarda el diario en el repo: `state/live_journal.csv` (operaciones),
+   `state/live_equity.csv` (equity por hora) y `state/live_state.json` (estado).
+
+Así puedes volver al repo en 1-2 días y revisar exactamente qué hizo el bot.
+
+**Para activarlo:**
+- La workflow debe estar en la rama `main` (GitHub solo dispara `cron` en la
+  rama por defecto): **fusiona el PR a `main`**.
+- O lánzalo manualmente en la pestaña **Actions → Paper Trading Bot → Run workflow**.
+
+La configuración (símbolo, intervalo, estrategia, capital) se edita en el bloque
+`env:` de la workflow, sin tocar código.
+
+> ⚠️ 2 días es muy poco para juzgar rentabilidad: este modo demuestra que el bot
+> **opera en vivo correctamente**, no es una prueba de ganancias. La ventaja de
+> la estrategia se mide en marcos diarios y tendencias largas (ver backtests).
+
 ## ⚠️ Aviso importante
 
 - Esto es **paper trading**: dinero **virtual**. No hay riesgo de capital real.
