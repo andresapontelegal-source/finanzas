@@ -1,0 +1,17 @@
+# Cache de datos de mercado (se regenera)
+data/*.csv
+
+# Salidas de backtest puntual (no son resultados en vivo)
+state/equity_curve.csv
+state/trades.csv
+state/metrics.json
+state/best_params.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# NOTA: los resultados del bot en vivo (state/live_*.csv y state/live_state.json)
+# SI se versionan: son el diario que el Action programado va guardando.

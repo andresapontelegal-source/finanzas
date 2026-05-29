@@ -1,0 +1,22 @@
+{
+  "config": {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "strategy": "ema_trend",
+    "params": {
+      "fast": 30,
+      "slow": 50,
+      "trend": 250
+    },
+    "cash": 10000.0,
+    "fee": 0.001,
+    "slippage": 0.0005
+  },
+  "started_at": "2026-05-29T23:41:17.736150+00:00",
+  "cash": 10000.0,
+  "position_qty": 0.0,
+  "entry_price": 0.0,
+  "last_candle": "2026-05-29T22:00:00+00:00",
+  "trades": [],
+  "iterations": 1
+}

@@ -1,0 +1,61 @@
+name: Paper Trading Bot (en vivo, simulado)
+
+# Ejecuta el bot de paper trading cada hora. Es 100% simulado: usa datos
+# publicos de Binance y dinero VIRTUAL. Cada ejecucion actualiza la cartera
+# simulada y guarda el diario (state/live_*) en el propio repositorio.
+#
+# IMPORTANTE: GitHub solo dispara cron en la rama por defecto (main). Para que
+# corra automaticamente, esta workflow debe estar en `main` (fusiona el PR).
+# Tambien puedes lanzarlo manualmente desde la pestaña Actions (Run workflow).
+
+on:
+  schedule:
+    - cron: "5 * * * *"   # cada hora, al minuto 5 (UTC)
+  workflow_dispatch:        # ejecucion manual bajo demanda
+
+permissions:
+  contents: write           # para guardar (commit/push) el diario de resultados
+
+concurrency:
+  group: paper-trading
+  cancel-in-progress: false
+
+env:
+  # Configuracion del bot (editable aqui sin tocar codigo).
+  BOT_SYMBOL: BTCUSDT
+  BOT_INTERVAL: "1h"
+  BOT_STRATEGY: ema_trend
+  BOT_PARAMS: '{"fast":30,"slow":50,"trend":250}'
+  BOT_CASH: "10000"
+  BOT_FEE: "0.001"
+  BOT_SLIPPAGE: "0.0005"
+
+jobs:
+  trade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install --quiet pandas numpy
+
+      - name: Run one paper-trading cycle
+        run: python -m trading_bot.live_runner
+
+      - name: Commit results
+        run: |
+          git config user.name  "paper-trading-bot"
+          git config user.email "actions@github.com"
+          git add state/live_state.json state/live_journal.csv state/live_equity.csv
+          if git diff --cached --quiet; then
+            echo "Sin cambios que guardar."
+          else
+            git commit -m "Paper trading: ciclo $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
