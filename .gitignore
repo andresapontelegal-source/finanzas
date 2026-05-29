@@ -1,0 +1,10 @@
+# Datos de mercado cacheados y resultados generados
+data/*.csv
+state/*.csv
+state/*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
