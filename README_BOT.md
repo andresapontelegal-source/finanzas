@@ -103,6 +103,57 @@ Cada posición lleva **stop-loss y take-profit basados en ATR** (volatilidad),
 además de la salida por señal de la estrategia. Esto limita las pérdidas por
 operación y protege el capital.
 
+## 💻 Correrlo continuo en tu PC (recomendado)
+
+La forma más fiable de dejarlo operando días es en tu propia máquina (el cron
+de GitHub es poco fiable). Pasos:
+
+### 1. Configuración inicial (una vez)
+
+**Linux / macOS:**
+```bash
+chmod +x setup.sh run_live.sh
+./setup.sh
+```
+
+**Windows:**
+```bat
+setup.bat
+```
+
+Esto crea un entorno virtual `.venv`, instala dependencias y corre un backtest
+de prueba.
+
+### 2. Probar un ciclo en vivo (simulado)
+
+```bash
+./run_live.sh          # Linux/macOS
+run_live.bat           # Windows
+```
+
+Cada ejecución actualiza la cartera simulada y guarda el diario en `state/`:
+- `state/live_journal.csv` — operaciones simuladas
+- `state/live_equity.csv` — equity por ciclo
+- `state/live_state.json` — estado actual (efectivo, posición, P&L)
+
+### 3. Dejarlo corriendo automáticamente cada hora
+
+**Linux / macOS (cron):** ejecuta `crontab -e` y añade (ajusta la ruta):
+```cron
+5 * * * * /ruta/al/proyecto/run_live.sh >> /ruta/al/proyecto/state/cron.log 2>&1
+```
+
+**Windows (Programador de tareas):**
+1. Abre "Programador de tareas" → "Crear tarea básica".
+2. Desencadenador: diariamente, repetir cada 1 hora.
+3. Acción: "Iniciar un programa" → selecciona `run_live.bat`.
+
+A partir de ahí, vuelve cuando quieras y revisa `state/live_equity.csv` para ver
+todo lo que hizo el bot.
+
+> La configuración (símbolo, intervalo, estrategia) se edita en las variables
+> `BOT_*` dentro de `run_live.sh` / `run_live.bat`.
+
 ## 🔄 Bot en vivo continuo (GitHub Actions)
 
 Para que el bot opere **de forma continua durante días** sin depender de tu
