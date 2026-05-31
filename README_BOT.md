@@ -167,6 +167,25 @@ todo lo que hizo el bot.
 > La configuración (símbolo, intervalo, estrategia) se edita en las variables
 > `BOT_*` dentro de `run_live.sh` / `run_live.bat`.
 
+## 🔌 Dejarlo activo permanentemente (arranca al reiniciar)
+
+Para que el bot quede activo en tu PC **todo el tiempo y arranque solo al
+reiniciar**, usa los instaladores de la carpeta `autostart/`:
+
+| Sistema | Comando |
+|---------|---------|
+| Linux   | `./autostart/install_linux.sh` (systemd) |
+| macOS   | `./autostart/install_mac.sh` (LaunchAgent) |
+| Windows | doble clic en `autostart\install_windows.bat` (Tarea programada) |
+
+Esto instala el bot como servicio del sistema: arranca al encender el PC y
+ejecuta un ciclo diario + el vigilante de señales. Detalles y desinstalación en
+[`autostart/README.md`](autostart/README.md).
+
+> El bot estará activo **mientras tu computadora esté encendida**. Para trading
+> diario basta (solo corre 1×/día). Para 24/7 real sin tu PC, hace falta un
+> servidor en la nube.
+
 ## 🔔 Vigilante de señales (avisa cuándo comprar)
 
 ¿No quieres revisar a diario? El vigilante escanea varios pares y te **avisa solo
