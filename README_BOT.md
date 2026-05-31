@@ -124,7 +124,20 @@ setup.bat
 Esto crea un entorno virtual `.venv`, instala dependencias y corre un backtest
 de prueba.
 
-### 2. Probar un ciclo en vivo (simulado)
+### 2. (Opcional) Sembrar el diario con el histórico
+
+Para tener resultados que revisar de inmediato (sin esperar días), reconstruye
+el diario en vivo recorriendo todo el histórico:
+
+```bash
+BOT_INTERVAL=1d BOT_PARAMS='{"fast":10,"slow":100,"trend":250}' \
+  python -m trading_bot.live_runner --backfill
+```
+
+Esto deja `state/live_*` con el historial completo (operaciones + equity) y el
+estado listo para que el modo en vivo continúe desde el último punto.
+
+### 3. Probar un ciclo en vivo (simulado)
 
 ```bash
 ./run_live.sh          # Linux/macOS

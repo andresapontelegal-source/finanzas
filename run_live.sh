@@ -15,9 +15,9 @@ fi
 
 # Configuracion del bot (editable aqui).
 export BOT_SYMBOL="${BOT_SYMBOL:-BTCUSDT}"
-export BOT_INTERVAL="${BOT_INTERVAL:-1h}"
+export BOT_INTERVAL="${BOT_INTERVAL:-1d}"
 export BOT_STRATEGY="${BOT_STRATEGY:-ema_trend}"
-export BOT_PARAMS="${BOT_PARAMS:-{\"fast\":30,\"slow\":50,\"trend\":250}}"
+export BOT_PARAMS="${BOT_PARAMS:-{\"fast\":10,\"slow\":100,\"trend\":250}}"
 export BOT_CASH="${BOT_CASH:-10000}"
 export BOT_FEE="${BOT_FEE:-0.001}"
 export BOT_SLIPPAGE="${BOT_SLIPPAGE:-0.0005}"

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -143,10 +144,76 @@ def _config_from_env() -> dict:
     }
 
 
+def backfill(cfg: dict, limit: int = 1000) -> dict:
+    """Reconstruye el diario en vivo recorriendo el historico vela a vela.
+
+    Util para tener resultados que revisar de inmediato (sin esperar dias). Usa
+    el mismo motor de backtest y vuelca operaciones, equity y estado a state/.
+    A partir de ahi, run_once() continua en tiempo real desde el ultimo punto.
+    """
+    from .engine import backtest
+
+    # Limpiar diario previo.
+    for f in (STATE_FILE, JOURNAL_FILE, EQUITY_FILE):
+        if f.exists():
+            f.unlink()
+
+    df = data_mod.get_klines(cfg["symbol"], cfg["interval"], limit=limit, use_cache=False)
+    strategy = build_strategy(cfg["strategy"], **cfg.get("params", {}))
+    result = backtest(
+        df, strategy, initial_cash=cfg["cash"],
+        fee_rate=cfg["fee"], slippage=cfg["slippage"],
+    )
+
+    # Volcar diario de operaciones.
+    for _, t in result.trades.iterrows():
+        _append_line(
+            JOURNAL_FILE,
+            "timestamp,side,price,qty,fee,cash_after,reason",
+            f"{t['timestamp']},{t['side']},{t['price']:.2f},{t['qty']:.8f},"
+            f"{t['fee']:.2f},{t['cash_after']:.2f},{t['reason']}",
+        )
+
+    # Volcar curva de equity.
+    eq = result.equity_curve
+    init = cfg["cash"]
+    for ts, val in eq.items():
+        _append_line(
+            EQUITY_FILE,
+            "time,candle,price,position,equity,pnl_pct,action",
+            f"{ts},{ts.isoformat()},,BACKFILL,{val:.2f},{(val/init-1)*100:.4f},HISTORY",
+        )
+
+    # Guardar estado final para que el modo en vivo continue desde aqui.
+    # El backtest siempre cierra la posicion al final, asi que queda en efectivo:
+    # el capital final = ultimo valor de la curva de equity.
+    state = _default_state(cfg)
+    state["cash"] = float(eq.iloc[-1])
+    state["position_qty"] = 0.0
+    state["entry_price"] = 0.0
+    state["last_candle"] = df.index[-1].isoformat()
+    state["iterations"] = len(df)
+    state["trades"] = [
+        {
+            "timestamp": str(t["timestamp"]), "side": t["side"], "price": float(t["price"]),
+            "qty": float(t["qty"]), "fee": float(t["fee"]),
+            "cash_after": float(t["cash_after"]), "reason": t["reason"],
+        }
+        for _, t in result.trades.iterrows()
+    ]
+    _save_state(state)
+    return result.metrics
+
+
 def main() -> None:
     cfg = _config_from_env()
-    summary = run_once(cfg)
-    print(json.dumps(summary, indent=2))
+    if "--backfill" in sys.argv:
+        metrics = backfill(cfg)
+        print("Backfill completado. Metricas historicas:")
+        print(json.dumps(metrics, indent=2))
+    else:
+        summary = run_once(cfg)
+        print(json.dumps(summary, indent=2))
 
 
 if __name__ == "__main__":

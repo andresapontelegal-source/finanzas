@@ -10,8 +10,8 @@ name: Paper Trading Bot (en vivo, simulado)
 
 on:
   schedule:
-    - cron: "5 * * * *"   # cada hora, al minuto 5 (UTC)
-  workflow_dispatch:        # ejecucion manual bajo demanda
+    - cron: "10 0 * * *"   # una vez al dia, 00:10 UTC (marco diario)
+  workflow_dispatch:         # ejecucion manual bajo demanda
 
 permissions:
   contents: write           # para guardar (commit/push) el diario de resultados
@@ -23,9 +23,9 @@ concurrency:
 env:
   # Configuracion del bot (editable aqui sin tocar codigo).
   BOT_SYMBOL: BTCUSDT
-  BOT_INTERVAL: "1h"
+  BOT_INTERVAL: "1d"
   BOT_STRATEGY: ema_trend
-  BOT_PARAMS: '{"fast":30,"slow":50,"trend":250}'
+  BOT_PARAMS: '{"fast":10,"slow":100,"trend":250}'
   BOT_CASH: "10000"
   BOT_FEE: "0.001"
   BOT_SLIPPAGE: "0.0005"
