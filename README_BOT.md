@@ -167,6 +167,27 @@ todo lo que hizo el bot.
 > La configuración (símbolo, intervalo, estrategia) se edita en las variables
 > `BOT_*` dentro de `run_live.sh` / `run_live.bat`.
 
+## 🔔 Vigilante de señales (avisa cuándo comprar)
+
+¿No quieres revisar a diario? El vigilante escanea varios pares y te **avisa solo
+cuando hay una señal de COMPRA válida** — es decir, no basta con que exista la
+señal: la combinación par+marco+estrategia debe tener **buen historial**
+(retorno ≥ +20% y profit factor ≥ 1,3). Así evita setups perdedores.
+
+```bash
+python -m trading_bot.watch_signals --interval 1d          # escaneo puntual
+./watch.sh          # Linux/macOS (con notificación de escritorio)
+watch.bat           # Windows (con ventana de aviso)
+```
+
+Programa `watch.sh`/`watch.bat` con cron / Programador de tareas (1×/día). Cuando
+aparezca una compra válida, lo registra en `state/alerts.log` y lanza una
+notificación de escritorio (si tienes `notify-send` en Linux u `osascript` en Mac).
+
+```cron
+15 0 * * * /ruta/al/proyecto/watch.sh >> /ruta/al/proyecto/state/watch.log 2>&1
+```
+
 ## 🔄 Bot en vivo continuo (GitHub Actions)
 
 Para que el bot opere **de forma continua durante días** sin depender de tu
