@@ -16,7 +16,7 @@
   "cash": 0.0,
   "position_qty": 0.15043331406392163,
   "entry_price": 64279.863869999994,
-  "last_candle": "2026-06-22T16:00:00+00:00",
+  "last_candle": "2026-06-22T20:00:00+00:00",
   "trades": [
     {
       "timestamp": "2026-06-13 14:00:00+00:00",
@@ -100,5 +100,5 @@
       "reason": "signal_live"
     }
   ],
-  "iterations": 64
+  "iterations": 65
 }
