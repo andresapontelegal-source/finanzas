@@ -13,10 +13,10 @@
     "slippage": 0.0005
   },
   "started_at": "2026-05-29T23:41:17.736150+00:00",
-  "cash": 9403.811640930713,
-  "position_qty": 0.0,
-  "entry_price": 0.0,
-  "last_candle": "2026-07-01T22:00:00+00:00",
+  "cash": 0.0,
+  "position_qty": 0.1537835004881159,
+  "entry_price": 61088.528999999995,
+  "last_candle": "2026-07-02T03:00:00+00:00",
   "trades": [
     {
       "timestamp": "2026-06-13 14:00:00+00:00",
@@ -125,7 +125,16 @@
       "fee": 9.41322486579651,
       "cash_after": 9403.811640930713,
       "reason": "signal_live"
+    },
+    {
+      "timestamp": "2026-07-02 03:00:00+00:00",
+      "side": "BUY",
+      "price": 61088.528999999995,
+      "qty": 0.1537835004881159,
+      "fee": 9.403811640930714,
+      "cash_after": 0.0,
+      "reason": "signal_live"
     }
   ],
-  "iterations": 136
+  "iterations": 137
 }
